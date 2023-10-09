@@ -1,8 +1,9 @@
+import game from "./game";
 import "./style.css";
-import Board from "./board/board";
 
 const gameInitialization = () => {
-  Board.creatingBoard();
+  game.creatingBoard();
+  game.start();
 };
 
 gameInitialization();
