@@ -43,7 +43,7 @@ class Piece {
 
         return legalMoves;
       default:
-        console.log("Piece doesn't exist!");
+        return [[21], [37]];
     }
   }
 }

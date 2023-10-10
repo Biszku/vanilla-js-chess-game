@@ -1,5 +1,9 @@
 import Piece from "./pieces/piece";
 
+interface CoordinateProps {
+  [prop: string]: string[];
+}
+
 class Board {
   private columns = 8;
   private rows = 8;
@@ -14,7 +18,7 @@ class Board {
     "knight",
     "rook",
   ];
-  private coordinates = {
+  private coordinates: CoordinateProps = {
     horizontal: ["1", "2", "3", "4", "5", "6", "7", "8"].reverse(),
     vertical: ["A", "B", "C", "D", "E", "F", "G", "H"],
   };
@@ -88,14 +92,15 @@ class Board {
   }
 
   private renderBound(boundType: string = "horizontal") {
-    return `<div class=${
-      boundType === "vertical" ? "vertical" : "horizontal"
-    }-bound>${this.coordinates[boundType]
+    const index = boundType;
+
+    return `<div class=${boundType}-bound>${this.coordinates[index]
       .map(
         (el: string | number) =>
           `<div class=coordinate-fieled><span class=coordinate-chart>${el}</span></div>`
       )
-      .join("")}</div>`;
+      .join("")}
+    </div>`;
   }
 
   private renderElement(comps: string, location: string | null = null) {
