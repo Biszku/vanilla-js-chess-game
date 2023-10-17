@@ -16,19 +16,19 @@ body {
 
 #app {
   height: 100svh;
-  width: 100%;
   display: grid;
   place-items: center;
   background-color: #2e2e2e;
 }
 
 .chess-board {
-  width: 40%;
+  min-width: 45%;
   aspect-ratio: 1;
   display: grid;
   grid-template-columns: auto 1fr auto;
   grid-template-rows: auto 1fr auto;
   background-color: rgb(65 52 52);
+  position: relative;
 }
 
 .main-field {
@@ -78,6 +78,7 @@ body {
 
 .chess-field img {
   height: 100%;
+  width: auto;
   cursor: pointer;
 }
 
@@ -87,4 +88,28 @@ body {
 
 .white-field {
   background-color: #f1f3f5;
+}
+
+.legal-field {
+  height: 50%;
+  width: 50%;
+  border-radius: 50%;
+  background-color: #0000003b;
+  cursor: pointer;
+}
+
+.isAttacking {
+  background-color: #ff6b6b;
+}
+
+.info-box {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -150%);
+}
+
+.cur-player-output {
+  color: white;
+  font-size: 3.6rem;
 }
