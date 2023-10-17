@@ -4,6 +4,17 @@ interface CoordinateProps {
   [prop: string]: string[];
 }
 
+export type PieceStateArr = {
+  color: string;
+  curCol: number;
+  curRow: number;
+  name: string;
+  render: () => string;
+  legalMoves: (pieceState: PieceStateArr) => [number, number, string?][] | [];
+  changeCords: (cords: [number, number]) => void;
+  setName: (name: string) => void;
+}[];
+
 class Board {
   private columns = 8;
   private rows = 8;
@@ -26,15 +37,8 @@ class Board {
     ".main-field"
   ) as HTMLDivElement;
   protected boardState = new Map();
-  protected pieceState: {
-    color: string;
-    curCol: number;
-    curRow: number;
-    name: string;
-    render: () => string;
-    legalMoves: () => number[][];
-    changeCords: (cords: number[]) => void;
-  }[] = [];
+  protected boardStateByCords = new Map();
+  protected pieceState: PieceStateArr = [];
 
   creatingBoard() {
     this.renderMainBoard();
@@ -124,6 +128,7 @@ class Board {
       for (let cols = 1; cols <= this.columns; cols++) {
         const index = (rows - 1) * 8 + (cols - 1);
         this.boardState.set(rightArr[index], [cols, rows]);
+        this.boardStateByCords.set(cols + `${rows}`, rightArr[index]);
       }
     }
   }
