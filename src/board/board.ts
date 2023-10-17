@@ -9,8 +9,11 @@ export type PieceStateArr = {
   curCol: number;
   curRow: number;
   name: string;
+  possibleMoves: [number, number, (string | undefined)?][] | null;
   render: () => string;
-  legalMoves: (pieceState: PieceStateArr) => [number, number, string?][] | [];
+  legalMoves: (
+    pieceState: PieceStateArr
+  ) => [number, number, string?][] | [] | undefined;
   changeCords: (cords: [number, number]) => void;
   setName: (name: string) => void;
 }[];
@@ -44,6 +47,7 @@ class Board {
     this.renderMainBoard();
     this.renderBounds();
     this.createFieldsAssignment();
+    this.renderInitialMoves();
   }
 
   private renderMainBoard() {
@@ -95,6 +99,13 @@ class Board {
     }
   }
 
+  private renderElement(comps: string, location: string | null = null) {
+    this.parentElement.insertAdjacentHTML(
+      location === "outside" ? "beforebegin" : "afterbegin",
+      comps
+    );
+  }
+
   private renderBound(boundType: string = "horizontal") {
     const index = boundType;
 
@@ -105,13 +116,6 @@ class Board {
       )
       .join("")}
     </div>`;
-  }
-
-  private renderElement(comps: string, location: string | null = null) {
-    this.parentElement.insertAdjacentHTML(
-      location === "outside" ? "beforebegin" : "afterbegin",
-      comps
-    );
   }
 
   private createFieldsAssignment() {
@@ -131,6 +135,10 @@ class Board {
         this.boardStateByCords.set(cols + `${rows}`, rightArr[index]);
       }
     }
+  }
+
+  private renderInitialMoves() {
+    this.pieceState.forEach((el) => el.legalMoves(this.pieceState));
   }
 }
 

@@ -5,6 +5,7 @@ class Piece {
   curRow;
   name;
   color;
+  possibleMoves: [number, number, (string | undefined)?][] | [] = [];
   attackedFields: number[][] | null = null;
   moved?;
 
@@ -59,7 +60,7 @@ class Piece {
 
     switch (this.name) {
       case "pawn":
-        if (this.curRow === 1 || this.curRow === 8) return legalMoves;
+        if (this.curRow === 1 || this.curRow === 8) break;
 
         this.attackedFields &&
           this.attackedFields.forEach((cords) => {
@@ -81,7 +82,7 @@ class Piece {
             return obj.curCol === this.curCol && obj.curRow === this.curRow - 1;
         });
 
-        if (isBlocked) return legalMoves;
+        if (isBlocked) break;
 
         legalMoves.push([
           this.curCol,
@@ -109,7 +110,7 @@ class Piece {
           ]);
         break;
     }
-    return legalMoves;
+    this.possibleMoves = legalMoves;
   }
 }
 

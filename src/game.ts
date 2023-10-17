@@ -6,8 +6,11 @@ type singlePieceState = {
   curCol: number;
   curRow: number;
   name: string;
+  possibleMoves: [number, number, (string | undefined)?][] | null;
   render: () => string;
-  legalMoves: (pieseState: PieceStateArr) => [number, number, string?][] | [];
+  legalMoves: (
+    pieseState: PieceStateArr
+  ) => [number, number, string?][] | [] | undefined;
   changeCords: (cords: [number, number]) => void;
   setName: (name: string) => void;
 };
@@ -64,6 +67,7 @@ class Game extends Board {
       );
 
       this.selectedPieceObj = this.selectedPieceCords && PieceObj;
+      console.log(this.selectedPieceObj);
 
       this.showMarkerOnAvailableFields();
     }
@@ -78,7 +82,8 @@ class Game extends Board {
   isFieldAvaible(cords: number[]) {
     if (!this.selectedPieceObj) return null;
 
-    const legalMoves = this.selectedPieceObj.legalMoves(this.pieceState);
+    const legalMoves = this.selectedPieceObj.possibleMoves;
+    if (!legalMoves) return null;
 
     const isMoveLegal = legalMoves
       .map((arr) =>
@@ -100,7 +105,6 @@ class Game extends Board {
 
   makeMove(piece: HTMLDivElement) {
     if (!this.selectedPiece) return;
-    console.log(this.pieceState);
 
     this.pieceState = this.pieceState.filter(
       (el) =>
@@ -114,6 +118,8 @@ class Game extends Board {
         this.selectedField.slice(0, 2) as [number, number]
       );
 
+    this.updatePossibleMoves();
+
     piece.insertAdjacentElement("afterbegin", this.selectedPiece);
     if (
       this.selectedPieceObj?.curRow === 8 ||
@@ -124,6 +130,10 @@ class Game extends Board {
     this.changePlayer();
   }
 
+  updatePossibleMoves() {
+    this.pieceState.forEach((el) => el.legalMoves(this.pieceState));
+  }
+
   swapPiece(piece: HTMLDivElement) {
     this.selectedPieceObj?.setName("queen");
     if (this.selectedPieceObj)
@@ -131,7 +141,7 @@ class Game extends Board {
   }
 
   showMarkerOnAvailableFields() {
-    const Fields = this.selectedPieceObj?.legalMoves(this.pieceState);
+    const Fields = this.selectedPieceObj?.possibleMoves;
 
     Fields?.forEach((arr) => {
       const [col, row, isAttack] = arr;
