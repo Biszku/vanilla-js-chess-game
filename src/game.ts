@@ -8,9 +8,7 @@ type singlePieceState = {
   name: string;
   possibleMoves: [number, number, (string | undefined)?][] | null;
   render: () => string;
-  legalMoves: (
-    pieseState: PieceStateArr
-  ) => [number, number, string?][] | [] | undefined;
+  legalMoves: (pieseState: PieceStateArr) => void;
   changeCords: (cords: [number, number]) => void;
   setName: (name: string) => void;
 };

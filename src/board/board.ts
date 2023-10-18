@@ -11,9 +11,7 @@ export type PieceStateArr = {
   name: string;
   possibleMoves: [number, number, (string | undefined)?][] | null;
   render: () => string;
-  legalMoves: (
-    pieceState: PieceStateArr
-  ) => [number, number, string?][] | [] | undefined;
+  legalMoves: (pieceState: PieceStateArr) => void;
   changeCords: (cords: [number, number]) => void;
   setName: (name: string) => void;
 }[];
