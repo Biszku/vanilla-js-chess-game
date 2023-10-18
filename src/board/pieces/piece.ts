@@ -109,8 +109,119 @@ class Piece {
             this.color === "white" ? this.curRow + 2 : this.curRow - 2,
           ]);
         break;
+      case "king":
+        legalMoves.push(...this.kingMoves());
+        break;
+      case "queen":
+        legalMoves.push(...this.crossMoves());
+        legalMoves.push(...this.verticalMoves());
+        legalMoves.push(...this.horizontalMoves());
+        break;
+      case "bishop":
+        legalMoves.push(...this.crossMoves());
+        break;
+      case "knight":
+        legalMoves.push(...this.knightMoves());
+        break;
+      case "rook":
+        legalMoves.push(...this.verticalMoves());
+        legalMoves.push(...this.horizontalMoves());
+        break;
     }
     this.possibleMoves = legalMoves;
+  }
+
+  verticalMoves() {
+    const result: [number, number, string?][] = [];
+    for (let curRow = this.curRow + 1; curRow <= 8; curRow++) {
+      result.push([this.curCol, curRow]);
+    }
+    for (let curRow = this.curRow - 1; curRow >= 1; curRow--) {
+      result.push([this.curCol, curRow]);
+    }
+    return result;
+  }
+
+  horizontalMoves() {
+    const result: [number, number, string?][] = [];
+    for (let curCol = this.curCol + 1; curCol <= 8; curCol++) {
+      result.push([curCol, this.curRow]);
+    }
+    for (let curCol = this.curCol - 1; curCol >= 1; curCol--) {
+      result.push([curCol, this.curRow]);
+    }
+    return result;
+  }
+
+  crossMoves() {
+    const result: [number, number, string?][] = [];
+    const numOfIterations = [0, 0];
+    for (let curCol = this.curCol - 1; curCol >= 1; curCol--) {
+      numOfIterations[0] += 1;
+      result.push(
+        [curCol, this.curRow + numOfIterations[0]],
+        [curCol, this.curRow - numOfIterations[0]]
+      );
+    }
+
+    for (let curCol = this.curCol + 1; curCol <= 8; curCol++) {
+      numOfIterations[1] += 1;
+      result.push(
+        [curCol, this.curRow + numOfIterations[1]],
+        [curCol, this.curRow - numOfIterations[1]]
+      );
+    }
+    return result.filter((cords) => cords[1] >= 1 && cords[1] <= 8);
+  }
+
+  knightMoves() {
+    const result: [number, number, string?][] = [];
+    result.push(
+      [this.curCol + 2, this.curRow + 1],
+      [this.curCol + 2, this.curRow - 1]
+    );
+    result.push(
+      [this.curCol - 2, this.curRow + 1],
+      [this.curCol - 2, this.curRow - 1]
+    );
+
+    result.push(
+      [this.curCol + 1, this.curRow + 2],
+      [this.curCol - 1, this.curRow + 2]
+    );
+
+    result.push(
+      [this.curCol + 1, this.curRow - 2],
+      [this.curCol - 1, this.curRow - 2]
+    );
+
+    return result.filter(
+      (cords) =>
+        cords[0] >= 1 && cords[0] <= 8 && cords[1] >= 1 && cords[1] <= 8
+    );
+  }
+
+  kingMoves() {
+    const result: [number, number, string?][] = [];
+    result.push(
+      [this.curCol + 1, this.curRow + 1],
+      [this.curCol, this.curRow + 1],
+      [this.curCol - 1, this.curRow + 1]
+    );
+    result.push(
+      [this.curCol + 1, this.curRow - 1],
+      [this.curCol, this.curRow - 1],
+      [this.curCol - 1, this.curRow - 1]
+    );
+
+    result.push([this.curCol - 1, this.curRow]);
+
+    result.push([this.curCol + 1, this.curRow]);
+
+    return result.filter(
+      (cords) =>
+        cords[0] >= 1 && cords[0] <= 8 && cords[1] >= 1 && cords[1] <= 8
+    );
   }
 }
 
