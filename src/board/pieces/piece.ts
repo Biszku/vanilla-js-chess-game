@@ -38,7 +38,7 @@ class Piece {
   }
 
   render() {
-    return `<img src=${this.color}-${this.name}.png  />`;
+    return `<img src=${this.color}-${this.name}.svg  />`;
   }
   setName(name: string) {
     this.name = name;
