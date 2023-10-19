@@ -5,7 +5,7 @@ class Piece {
   curRow;
   name;
   color;
-  possibleMoves: [number, number, (string | undefined)?][] | [] = [];
+  possibleMoves: [number, number, (string | undefined)?][] = [];
   attackedFields: number[][] | null = null;
   moved?;
 
@@ -110,71 +110,177 @@ class Piece {
           ]);
         break;
       case "king":
-        legalMoves.push(...this.kingMoves());
+        legalMoves.push(...this.kingMoves(pieceState));
         break;
       case "queen":
-        legalMoves.push(...this.crossMoves());
-        legalMoves.push(...this.verticalMoves());
-        legalMoves.push(...this.horizontalMoves());
+        legalMoves.push(...this.crossMoves(pieceState));
+        legalMoves.push(...this.verticalMoves(pieceState));
+        legalMoves.push(...this.horizontalMoves(pieceState));
         break;
       case "bishop":
-        legalMoves.push(...this.crossMoves());
+        legalMoves.push(...this.crossMoves(pieceState));
         break;
       case "knight":
-        legalMoves.push(...this.knightMoves());
+        legalMoves.push(...this.knightMoves(pieceState));
         break;
       case "rook":
-        legalMoves.push(...this.verticalMoves());
-        legalMoves.push(...this.horizontalMoves());
+        legalMoves.push(...this.verticalMoves(pieceState));
+        legalMoves.push(...this.horizontalMoves(pieceState));
         break;
     }
     this.possibleMoves = legalMoves;
   }
 
-  verticalMoves() {
+  verticalMoves(pieceState: PieceStateArr) {
     const result: [number, number, string?][] = [];
+    let isBlocking = false;
+
     for (let curRow = this.curRow + 1; curRow <= 8; curRow++) {
-      result.push([this.curCol, curRow]);
+      const isOccupied = pieceState.find(
+        (piece) => piece.curCol === this.curCol && piece.curRow === curRow
+      );
+
+      if (isOccupied && !isBlocking) {
+        if (isOccupied.color === this.color) isBlocking = true;
+        else {
+          isBlocking = true;
+          result.push([this.curCol, curRow, "attack"]);
+        }
+      }
+
+      !isBlocking && result.push([this.curCol, curRow]);
     }
+
     for (let curRow = this.curRow - 1; curRow >= 1; curRow--) {
+      const isOccupied = pieceState.find(
+        (piece) => piece.curCol === this.curCol && piece.curRow === curRow
+      );
+
+      if (isOccupied) {
+        if (isOccupied.color === this.color) return result;
+        else {
+          result.push([this.curCol, curRow, "attack"]);
+          return result;
+        }
+      }
+
       result.push([this.curCol, curRow]);
     }
     return result;
   }
 
-  horizontalMoves() {
+  horizontalMoves(pieceState: PieceStateArr) {
     const result: [number, number, string?][] = [];
+    let isBlocking = false;
+
     for (let curCol = this.curCol + 1; curCol <= 8; curCol++) {
-      result.push([curCol, this.curRow]);
+      const isOccupied = pieceState.find(
+        (piece) => piece.curCol === curCol && piece.curRow === this.curRow
+      );
+
+      if (isOccupied && !isBlocking) {
+        if (isOccupied.color === this.color) isBlocking = true;
+        else {
+          isBlocking = true;
+          result.push([curCol, this.curRow, "attack"]);
+        }
+      }
+
+      !isBlocking && result.push([curCol, this.curRow]);
     }
+
     for (let curCol = this.curCol - 1; curCol >= 1; curCol--) {
+      const isOccupied = pieceState.find(
+        (piece) => piece.curCol === curCol && piece.curRow === this.curRow
+      );
+
+      if (isOccupied) {
+        if (isOccupied.color === this.color) return result;
+        else {
+          result.push([curCol, this.curRow, "attack"]);
+          return result;
+        }
+      }
+
       result.push([curCol, this.curRow]);
     }
     return result;
   }
 
-  crossMoves() {
+  crossMoves(pieceState: PieceStateArr) {
     const result: [number, number, string?][] = [];
     const numOfIterations = [0, 0];
+    const isBlockingLeftSide = [false, false];
+    const isBlockingRightSide = [false, false];
+
     for (let curCol = this.curCol - 1; curCol >= 1; curCol--) {
       numOfIterations[0] += 1;
-      result.push(
-        [curCol, this.curRow + numOfIterations[0]],
-        [curCol, this.curRow - numOfIterations[0]]
+
+      const isOccupiedUp = pieceState.find(
+        (piece) =>
+          piece.curCol === curCol &&
+          piece.curRow === this.curRow + numOfIterations[0]
       );
+
+      const isOccupiedDown = pieceState.find(
+        (piece) =>
+          piece.curCol === curCol &&
+          piece.curRow === this.curRow - numOfIterations[0]
+      );
+
+      if (isOccupiedUp && !isBlockingLeftSide[0]) {
+        isBlockingLeftSide[0] = true;
+        if (isOccupiedUp.color !== this.color)
+          result.push([curCol, this.curRow + numOfIterations[0], "attack"]);
+      }
+      if (isOccupiedDown && !isBlockingLeftSide[1]) {
+        isBlockingLeftSide[1] = true;
+        if (isOccupiedDown.color !== this.color)
+          result.push([curCol, this.curRow + numOfIterations[0], "attack"]);
+      }
+
+      !isBlockingLeftSide[0] &&
+        result.push([curCol, this.curRow + numOfIterations[0]]);
+      !isBlockingLeftSide[1] &&
+        result.push([curCol, this.curRow - numOfIterations[0]]);
     }
 
     for (let curCol = this.curCol + 1; curCol <= 8; curCol++) {
       numOfIterations[1] += 1;
-      result.push(
-        [curCol, this.curRow + numOfIterations[1]],
-        [curCol, this.curRow - numOfIterations[1]]
+
+      const isOccupiedUp = pieceState.find(
+        (piece) =>
+          piece.curCol === curCol &&
+          piece.curRow === this.curRow + numOfIterations[1]
       );
+
+      const isOccupiedDown = pieceState.find(
+        (piece) =>
+          piece.curCol === curCol &&
+          piece.curRow === this.curRow - numOfIterations[1]
+      );
+
+      if (isOccupiedUp && !isBlockingRightSide[0]) {
+        isBlockingRightSide[0] = true;
+        if (isOccupiedUp.color !== this.color)
+          result.push([curCol, this.curRow + numOfIterations[1], "attack"]);
+      }
+      if (isOccupiedDown && !isBlockingRightSide[1]) {
+        isBlockingRightSide[1] = true;
+        if (isOccupiedDown.color !== this.color)
+          result.push([curCol, this.curRow + numOfIterations[1], "attack"]);
+      }
+
+      !isBlockingRightSide[0] &&
+        result.push([curCol, this.curRow + numOfIterations[1]]);
+      !isBlockingRightSide[1] &&
+        result.push([curCol, this.curRow - numOfIterations[1]]);
     }
+
     return result.filter((cords) => cords[1] >= 1 && cords[1] <= 8);
   }
 
-  knightMoves() {
+  knightMoves(pieceState: PieceStateArr) {
     const result: [number, number, string?][] = [];
     result.push(
       [this.curCol + 2, this.curRow + 1],
@@ -195,13 +301,38 @@ class Piece {
       [this.curCol - 1, this.curRow - 2]
     );
 
-    return result.filter(
-      (cords) =>
-        cords[0] >= 1 && cords[0] <= 8 && cords[1] >= 1 && cords[1] <= 8
-    );
+    return result
+      .filter((cords) => {
+        const [col, row] = cords;
+
+        const occupiedField = pieceState.find(
+          (piece) => piece.curCol === col && piece.curRow === row
+        );
+
+        if (
+          col >= 1 &&
+          col <= 8 &&
+          row >= 1 &&
+          row <= 8 &&
+          occupiedField?.color !== this.color
+        )
+          return true;
+        else return false;
+      })
+      .map((cords) => {
+        const [col, row] = cords;
+
+        const occupiedField = pieceState.find(
+          (piece) => piece.curCol === col && piece.curRow === row
+        );
+
+        if (occupiedField && occupiedField.color !== this.color)
+          return [...cords, "attack"];
+        else return cords;
+      });
   }
 
-  kingMoves() {
+  kingMoves(pieceState: PieceStateArr) {
     const result: [number, number, string?][] = [];
     result.push(
       [this.curCol + 1, this.curRow + 1],
@@ -218,10 +349,35 @@ class Piece {
 
     result.push([this.curCol + 1, this.curRow]);
 
-    return result.filter(
-      (cords) =>
-        cords[0] >= 1 && cords[0] <= 8 && cords[1] >= 1 && cords[1] <= 8
-    );
+    return result
+      .filter((cords) => {
+        const [col, row] = cords;
+
+        const occupiedField = pieceState.find(
+          (piece) => piece.curCol === col && piece.curRow === row
+        );
+
+        if (
+          cords[0] >= 1 &&
+          cords[0] <= 8 &&
+          cords[1] >= 1 &&
+          cords[1] <= 8 &&
+          occupiedField?.color !== this.color
+        )
+          return true;
+        else return false;
+      })
+      .map((cords) => {
+        const [col, row] = cords;
+
+        const occupiedField = pieceState.find(
+          (piece) => piece.curCol === col && piece.curRow === row
+        );
+
+        if (occupiedField && occupiedField.color !== this.color)
+          return [...cords, "attack"];
+        else return cords;
+      });
   }
 }
 
