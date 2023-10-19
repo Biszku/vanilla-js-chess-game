@@ -6,7 +6,7 @@ type singlePieceState = {
   curCol: number;
   curRow: number;
   name: string;
-  possibleMoves: [number, number, (string | undefined)?][] | null;
+  possibleMoves: [number, number, (string | undefined)?][];
   render: () => string;
   legalMoves: (pieseState: PieceStateArr) => void;
   changeCords: (cords: [number, number]) => void;
@@ -120,8 +120,9 @@ class Game extends Board {
 
     piece.insertAdjacentElement("afterbegin", this.selectedPiece);
     if (
-      this.selectedPieceObj?.curRow === 8 ||
-      this.selectedPieceObj?.curRow === 1
+      (this.selectedPieceObj?.curRow === 8 ||
+        this.selectedPieceObj?.curRow === 1) &&
+      this.selectedPieceObj.name === "pawn"
     )
       this.swapPiece(piece);
     this.resetChooseFieldAndPiece();
