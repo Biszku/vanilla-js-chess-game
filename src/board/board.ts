@@ -9,7 +9,7 @@ export type PieceStateArr = {
   curCol: number;
   curRow: number;
   name: string;
-  possibleMoves: [number, number, (string | undefined)?][] | null;
+  possibleMoves: [number, number, (string | undefined)?][];
   render: () => string;
   legalMoves: (pieceState: PieceStateArr) => void;
   changeCords: (cords: [number, number]) => void;
