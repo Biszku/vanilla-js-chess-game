@@ -301,25 +301,26 @@ class Piece {
       [this.curCol - 1, this.curRow - 2]
     );
 
-    return result
-      .filter((cords) => {
-        const [col, row] = cords;
+    const filteredResult = result.filter((cords) => {
+      const [col, row] = cords;
 
-        const occupiedField = pieceState.find(
-          (piece) => piece.curCol === col && piece.curRow === row
-        );
+      const occupiedField = pieceState.find(
+        (piece) => piece.curCol === col && piece.curRow === row
+      );
 
-        if (
-          col >= 1 &&
-          col <= 8 &&
-          row >= 1 &&
-          row <= 8 &&
-          occupiedField?.color !== this.color
-        )
-          return true;
-        else return false;
-      })
-      .map((cords) => {
+      if (
+        col >= 1 &&
+        col <= 8 &&
+        row >= 1 &&
+        row <= 8 &&
+        occupiedField?.color !== this.color
+      )
+        return true;
+      else return false;
+    });
+
+    const finalResults: [number, number, (string | undefined)?][] =
+      filteredResult.map((cords) => {
         const [col, row] = cords;
 
         const occupiedField = pieceState.find(
@@ -327,9 +328,11 @@ class Piece {
         );
 
         if (occupiedField && occupiedField.color !== this.color)
-          return [...cords, "attack"];
-        else return cords;
+          return [col, row, "attack"];
+        else return [col, row];
       });
+
+    return finalResults;
   }
 
   kingMoves(pieceState: PieceStateArr) {
@@ -349,25 +352,26 @@ class Piece {
 
     result.push([this.curCol + 1, this.curRow]);
 
-    return result
-      .filter((cords) => {
-        const [col, row] = cords;
+    const filteredResult = result.filter((cords) => {
+      const [col, row] = cords;
 
-        const occupiedField = pieceState.find(
-          (piece) => piece.curCol === col && piece.curRow === row
-        );
+      const occupiedField = pieceState.find(
+        (piece) => piece.curCol === col && piece.curRow === row
+      );
 
-        if (
-          cords[0] >= 1 &&
-          cords[0] <= 8 &&
-          cords[1] >= 1 &&
-          cords[1] <= 8 &&
-          occupiedField?.color !== this.color
-        )
-          return true;
-        else return false;
-      })
-      .map((cords) => {
+      if (
+        cords[0] >= 1 &&
+        cords[0] <= 8 &&
+        cords[1] >= 1 &&
+        cords[1] <= 8 &&
+        occupiedField?.color !== this.color
+      )
+        return true;
+      else return false;
+    });
+
+    const finalResult: [number, number, (string | undefined)?][] =
+      filteredResult.map((cords) => {
         const [col, row] = cords;
 
         const occupiedField = pieceState.find(
@@ -375,9 +379,11 @@ class Piece {
         );
 
         if (occupiedField && occupiedField.color !== this.color)
-          return [...cords, "attack"];
-        else return cords;
+          return [col, row, "attack"];
+        else return [col, row];
       });
+
+    return finalResult;
   }
 }
 
