@@ -1,32 +1,19 @@
 import Board from "./board/board";
-import { PieceStateArr } from "./board/board";
-
-type singlePieceState = {
-  color: string;
-  curCol: number;
-  curRow: number;
-  name: string;
-  possibleMoves: [number, number, (string | undefined)?][];
-  render: () => string;
-  legalMoves: (pieseState: PieceStateArr) => void;
-  changeCords: (cords: [number, number]) => void;
-  setName: (name: string) => void;
-};
+import { singlePieceState } from "./lib/definitions";
+import { selectedField } from "./lib/definitions";
 
 class Game extends Board {
-  private selectedField:
-    | (string | number | undefined)[]
-    | [number, number, string?]
-    | null = null;
+  private selectedField: selectedField = null;
   private selectedPiece: HTMLDivElement | null = null;
-  private selectedPieceCords: number[] | null = null;
   private selectedPieceObj: singlePieceState | null | undefined = null;
   private currentPlayer = "white";
   private curPlayerOutput = document.querySelector(
     ".cur-player-output"
   )! as HTMLSpanElement;
+  private gameState = false;
 
   start() {
+    this.gameState = true;
     this.addClickToFields();
   }
 
@@ -45,28 +32,22 @@ class Game extends Board {
     });
   }
 
-  selectField(cords: number[], target: HTMLDivElement) {
+  selectField(cords: [number, number], target: HTMLDivElement) {
+    if (!this.gameState) return;
     this.selectedField = this.isFieldAvaible(cords);
 
     if (!this.selectedField) {
-      const colorOfPiece =
-        target?.closest("img")?.getAttribute("src")?.slice(0, 5) + "";
+      const [col, row] = cords;
+      const piece = this.pieceState.find(
+        (piece) => piece.col === col && piece.row === row
+      );
 
-      if (colorOfPiece !== this.currentPlayer) return;
+      if (!piece) return;
+      if (piece.color !== this.currentPlayer) return;
 
       this.removeMarker();
       this.selectedPiece = target?.closest("img");
-      this.selectedPieceCords = this.selectedPiece && cords;
-
-      const PieceObj = this.pieceState.find(
-        (el) =>
-          el.curCol === this.selectedPieceCords?.[0] &&
-          el.curRow === this.selectedPieceCords?.[1]
-      );
-
-      this.selectedPieceObj = this.selectedPieceCords && PieceObj;
-      console.log(this.selectedPieceObj);
-
+      this.selectedPieceObj = piece;
       this.showMarkerOnAvailableFields();
     }
 
@@ -77,11 +58,10 @@ class Game extends Board {
     }
   }
 
-  isFieldAvaible(cords: number[]) {
+  isFieldAvaible(cords: [number, number]) {
     if (!this.selectedPieceObj) return null;
 
     const legalMoves = this.selectedPieceObj.possibleMoves;
-    if (!legalMoves) return null;
 
     const isMoveLegal = legalMoves
       .map((arr) =>
@@ -91,40 +71,41 @@ class Game extends Board {
       .includes(cords.join(""));
 
     if (!isMoveLegal) return null;
-
-    const filteredLegalMovesArr = legalMoves
-      .filter(
-        (movesArr) => movesArr[0] === cords[0] && movesArr[1] === cords[1]
-      )
-      .flat(2);
-
-    return filteredLegalMovesArr;
+    return cords;
   }
 
-  makeMove(piece: HTMLDivElement) {
+  makeMove(field: HTMLDivElement) {
     if (!this.selectedPiece) return;
+
+    const isKingCaptured = this.pieceState.find(
+      (piece) =>
+        piece.col === this.selectedField?.[0] &&
+        piece.row === this.selectedField?.[1]
+    );
+
+    if (isKingCaptured?.name === "king") {
+      this.curPlayerOutput.textContent = this.currentPlayer + " won the game!";
+      this.gameState = false;
+    }
 
     this.pieceState = this.pieceState.filter(
       (el) =>
-        el.curCol !== this.selectedField?.[0] ||
-        el.curRow !== this.selectedField?.[1]
+        el.col !== this.selectedField?.[0] || el.row !== this.selectedField?.[1]
     );
 
-    piece.innerHTML = "";
+    field.innerHTML = "";
     this.selectedField &&
-      this.selectedPieceObj?.changeCords(
-        this.selectedField.slice(0, 2) as [number, number]
-      );
+      this.selectedPieceObj?.changeCords(this.selectedField);
 
     this.updatePossibleMoves();
 
-    piece.insertAdjacentElement("afterbegin", this.selectedPiece);
+    field.insertAdjacentElement("afterbegin", this.selectedPiece);
     if (
-      (this.selectedPieceObj?.curRow === 8 ||
-        this.selectedPieceObj?.curRow === 1) &&
+      (this.selectedPieceObj?.row === 8 || this.selectedPieceObj?.row === 1) &&
       this.selectedPieceObj.name === "pawn"
     )
-      this.swapPiece(piece);
+      this.swapPiece(field);
+    if (!this.gameState) return;
     this.resetChooseFieldAndPiece();
     this.changePlayer();
   }
@@ -134,22 +115,24 @@ class Game extends Board {
   }
 
   swapPiece(piece: HTMLDivElement) {
-    this.selectedPieceObj?.setName("queen");
+    this.selectedPieceObj?.setName("queen", this.pieceState);
     if (this.selectedPieceObj)
       piece.innerHTML = this.selectedPieceObj?.render();
   }
 
   showMarkerOnAvailableFields() {
-    const Fields = this.selectedPieceObj?.possibleMoves;
+    const possibleMoves = this.selectedPieceObj?.possibleMoves;
 
-    Fields?.forEach((arr) => {
+    possibleMoves?.forEach((arr) => {
       const [col, row, isAttack] = arr;
       const cords = [col, row];
       const field = this.boardStateByCords.get(
         cords.join("")
       ) as HTMLDivElement;
+
       if (isAttack) return field.classList.add("isAttacking");
       const markup = document.createElement("div");
+
       markup.className = "legal-field";
       field.insertAdjacentElement("afterbegin", markup);
     });
@@ -170,7 +153,6 @@ class Game extends Board {
   resetChooseFieldAndPiece() {
     this.selectedField = null;
     this.selectedPiece = null;
-    this.selectedPieceCords = null;
     this.selectedPieceObj = null;
   }
 }
