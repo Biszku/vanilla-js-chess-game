@@ -1,26 +1,12 @@
 import Piece from "./pieces/piece";
-
-interface CoordinateProps {
-  [prop: string]: string[];
-}
-
-export type PieceStateArr = {
-  color: string;
-  curCol: number;
-  curRow: number;
-  name: string;
-  possibleMoves: [number, number, (string | undefined)?][];
-  render: () => string;
-  legalMoves: (pieceState: PieceStateArr) => void;
-  changeCords: (cords: [number, number]) => void;
-  setName: (name: string) => void;
-}[];
+import { PieceStateArr } from "../lib/definitions";
+import { CoordinateTypes } from "../lib/definitions";
 
 class Board {
   private columns = 8;
   private rows = 8;
-  private initialColor = "white";
-  private piecePattern = [
+  private startingRowColor = "white";
+  private pieces = [
     "rook",
     "knight",
     "bishop",
@@ -30,7 +16,7 @@ class Board {
     "knight",
     "rook",
   ];
-  private coordinates: CoordinateProps = {
+  private coordinates: CoordinateTypes = {
     horizontal: ["1", "2", "3", "4", "5", "6", "7", "8"].reverse(),
     vertical: ["A", "B", "C", "D", "E", "F", "G", "H"],
   };
@@ -50,25 +36,23 @@ class Board {
 
   private renderMainBoard() {
     const MainBoard = [];
-    let curInitColor = this.initialColor;
+    let fieldColor = this.startingRowColor;
 
     for (let rows = this.rows; rows >= 1; rows--) {
-      let curColor = curInitColor;
+      let curColor = fieldColor;
 
       for (let cols = 1; cols <= this.columns; cols++) {
         const renderedField = this.renderField(curColor, cols, rows);
         MainBoard.push(renderedField);
         curColor = curColor === "white" ? "black" : "white";
       }
-      curInitColor = curInitColor === "white" ? "black" : "white";
+      fieldColor = fieldColor === "white" ? "black" : "white";
     }
     this.renderElement(MainBoard.join(""));
   }
 
   private renderField(color: string, col: number, row: number) {
-    const colorClass = color === "black" ? "black-field" : "white-field";
-
-    return `<div class="chess-field ${colorClass}">${this.renderPiece(
+    return `<div class="chess-field ${color + "-field"}">${this.renderPiece(
       col,
       row
     )}</div>`;
@@ -77,7 +61,7 @@ class Board {
   private renderPiece(col: number, row: number) {
     const piece =
       row === 1 || row === 8
-        ? new Piece(col, row, this.piecePattern[col - 1])
+        ? new Piece(col, row, this.pieces[col - 1])
         : row === 2 || row === 7
         ? new Piece(col, row, "pawn")
         : null;
@@ -136,7 +120,7 @@ class Board {
   }
 
   private renderInitialMoves() {
-    this.pieceState.forEach((el) => el.legalMoves(this.pieceState));
+    this.pieceState.forEach((piece) => piece.legalMoves(this.pieceState));
   }
 }
 
